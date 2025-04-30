@@ -1,45 +1,125 @@
 -- Roblox GUI For Game 3008 Cod9d By Unnamed0a0
- 
+
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
- 
-local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
-ScreenGui.Name = "KillMenu"
- 
-local Frame = Instance.new("Frame", ScreenGui)
-Frame.Size = UDim2.new(0, 250, 0, 150)
-Frame.Position = UDim2.new(0.5, -125, 0.5, -75)
-Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-Frame.BorderSizePixel = 0
- 
-local UICorner = Instance.new("UICorner", Frame)
-UICorner.CornerRadius = UDim.new(0, 8)
- 
-local TextBox = Instance.new("TextBox", Frame)
-TextBox.PlaceholderText = "Имя игрока"
-TextBox.Size = UDim2.new(0.8, 0, 0, 30)
-TextBox.Position = UDim2.new(0.1, 0, 0.2, 0)
-TextBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-TextBox.TextColor3 = Color3.new(1, 1, 1)
-TextBox.Text = ""
-Instance.new("UICorner", TextBox)
- 
-local Button = Instance.new("TextButton", Frame)
-Button.Text = "Убить"
-Button.Size = UDim2.new(0.8, 0, 0, 30)
-Button.Position = UDim2.new(0.1, 0, 0.6, 0)
-Button.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-Button.TextColor3 = Color3.new(1, 1, 1)
-Instance.new("UICorner", Button)
- 
-Button.MouseButton1Click:Connect(function()
-    local targetName = TextBox.Text
-    local targetPlayer = Players:FindFirstChild(targetName)
- 
-    if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("Humanoid") then
-        targetPlayer.Character.Humanoid.Health = 0
-    else
-        warn("Игрок не найден или отсутствует Humanoid.")
-    end
+
+-- GUI
+local gui = Instance.new("ScreenGui", game.CoreGui)
+gui.Name = "ModMenu"
+
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0, 250, 0, 200)
+frame.Position = UDim2.new(0.3, 0, 0.3, 0)
+frame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+frame.BorderSizePixel = 0
+
+local corner = Instance.new("UICorner", frame)
+corner.CornerRadius = UDim.new(0, 10)
+
+-- Dragging
+local dragging, dragInput, dragStart, startPos
+
+frame.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = true
+		dragStart = input.Position
+		startPos = frame.Position
+
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
+	end
 end)
- 
+
+frame.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement then
+		dragInput = input
+	end
+end)
+
+game:GetService("UserInputService").InputChanged:Connect(function(input)
+	if input == dragInput and dragging then
+		local delta = input.Position - dragStart
+		frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+	end
+end)
+
+-- TextBox
+local textbox = Instance.new("TextBox", frame)
+textbox.PlaceholderText = "Имя игрока"
+textbox.Size = UDim2.new(0.8, 0, 0, 30)
+textbox.Position = UDim2.new(0.1, 0, 0.1, 0)
+textbox.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+textbox.TextColor3 = Color3.new(1, 1, 1)
+textbox.Text = ""
+Instance.new("UICorner", textbox)
+
+-- Kill by name
+local killButton = Instance.new("TextButton", frame)
+killButton.Text = "Убить игрока"
+killButton.Size = UDim2.new(0.8, 0, 0, 30)
+killButton.Position = UDim2.new(0.1, 0, 0.3, 0)
+killButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+killButton.TextColor3 = Color3.new(1, 1, 1)
+Instance.new("UICorner", killButton)
+
+killButton.MouseButton1Click:Connect(function()
+	local name = textbox.Text
+	local player = Players:FindFirstChild(name)
+	if player and player.Character and player.Character:FindFirstChild("Humanoid") then
+		player.Character.Humanoid.Health = 0
+	end
+end)
+
+-- Kill all except me
+local killAllBtn = Instance.new("TextButton", frame)
+killAllBtn.Text = "Убить всех (кроме себя)"
+killAllBtn.Size = UDim2.new(0.8, 0, 0, 30)
+killAllBtn.Position = UDim2.new(0.1, 0, 0.5, 0)
+killAllBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 200)
+killAllBtn.TextColor3 = Color3.new(1, 1, 1)
+Instance.new("UICorner", killAllBtn)
+
+killAllBtn.MouseButton1Click:Connect(function()
+	for _, player in pairs(Players:GetPlayers()) do
+		if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Humanoid") then
+			player.Character.Humanoid.Health = 0
+		end
+	end
+end)
+
+-- Revive self
+local reviveBtn = Instance.new("TextButton", frame)
+reviveBtn.Text = "Возродить себя"
+reviveBtn.Size = UDim2.new(0.8, 0, 0, 30)
+reviveBtn.Position = UDim2.new(0.1, 0, 0.7, 0)
+reviveBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+reviveBtn.TextColor3 = Color3.new(1, 1, 1)
+Instance.new("UICorner", reviveBtn)
+
+reviveBtn.MouseButton1Click:Connect(function()
+	local char = LocalPlayer.Character
+	if char then
+		char:Destroy()
+	end
+end)
+
+-- Collapse button (round toggle)
+local toggleBtn = Instance.new("TextButton", gui)
+toggleBtn.Size = UDim2.new(0, 40, 0, 40)
+toggleBtn.Position = frame.Position + UDim2.new(0, frame.Size.X.Offset + 10, 0, 0)
+toggleBtn.Text = "+"
+toggleBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 255)
+toggleBtn.TextColor3 = Color3.new(1, 1, 1)
+toggleBtn.Name = "ToggleButton"
+Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(1, 0)
+
+-- Toggle visibility
+local visible = true
+toggleBtn.MouseButton1Click:Connect(function()
+	visible = not visible
+	frame.Visible = visible
+	toggleBtn.Text = visible and "-" or "+"
+end)
