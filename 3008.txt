@@ -123,3 +123,34 @@ toggleBtn.MouseButton1Click:Connect(function()
 	frame.Visible = visible
 	toggleBtn.Text = visible and "-" or "+"
 end)
+-- Заменить скин всем игрокам (включая себя)
+local changeSkinBtn = Instance.new("TextButton", frame)
+changeSkinBtn.Text = "Изменить скин всем"
+changeSkinBtn.Size = UDim2.new(0.8, 0, 0, 30)
+changeSkinBtn.Position = UDim2.new(0.1, 0, 0.9, 0)
+changeSkinBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
+changeSkinBtn.TextColor3 = Color3.new(1, 1, 1)
+Instance.new("UICorner", changeSkinBtn)
+
+changeSkinBtn.MouseButton1Click:Connect(function()
+    for _, player in pairs(Players:GetPlayers()) do
+        if player.Character then
+            local char = player.Character
+
+            -- Удаление текущих аксессуаров и одежды
+            for _, item in pairs(char:GetChildren()) do
+                if item:IsA("Accessory") or item:IsA("Shirt") or item:IsA("Pants") or item:IsA("BodyColors") then
+                    item:Destroy()
+                end
+            end
+
+            -- Применение ассета
+            pcall(function()
+                local asset = game:GetObjects("rbxassetid://259499691")[1]
+                if asset then
+                    asset.Parent = char
+                end
+            end)
+        end
+    end
+end)
